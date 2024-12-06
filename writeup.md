@@ -120,7 +120,19 @@ The daughterboard includes the following features:
         - CoreSight software debug and 32-bit trace ports provide a powerful infrastructure for observing and debugging the operation of the Cortex-A15. CoreSight allows for non-intrusive debugging and tracing, while the 32-bit trace ports enable detailed output of the processor's internal activities, making it much easier for developers to troubleshoot issues and optimize software performance. This feature is particularly useful in embedded systems where visibility into low-level operations is often necessary to understand and solve complex bugs.
 
 * HDRX header with one AMBA AXI master bus port that connects to the other daughterboard site on the V2M-P1 motherboard.
-    1. HDRX Header
+    1. HDRX Header:
+        * HDRX is likely referring to a hardware reader - a physical connector that allows different boards or components to connect to each other. The exact term "HDRX" might a specific naming convention for this board.
+        * A header is essentially a port that allows external hardware to be attached to the system, in this case, likely connecting a daughterboard.
+    2. One AMBA AXI Master Bus Port:
+        * AMBA stands for Advanced Microcontroller Bus Architecture, a protocol specification used by ARM processors to handle communication between different components in the system-on-chip (SoC).
+        * AXI (Advanced eXtensible Interface) is a part of the AMBA specification and is designec for high-speed communication, often between the CPU and memory or peripherals.
+        * A master bus port is capable of initiating transactions. The AXI master can red or write data by initiating requests to other components connected to the bus, like memory or other peripherals.
+        * In this context, the AMBA AXI master bus port is the connection that allows the daugtherboard to control other parts of the system - essentially acting as the "controller" iniating data transfers.
+    3. Connects to the Other Daughterboard Site on the V2M-P1 motherboard:
+        * The V2M-P1 motherboard is the main development board that connects to various daughterboards.
+        * The other daughterboard site means that the HDRX header connects to an additional daughterboard site, effectively linking the two daughterboards. This kind of connection allows for enhanced capabilities and resource sharing between the boards.
+        * This setup implies that the AXI master bus on one daughterboard can control or communicate with components on another daughterboard through the V2M-P1 motherboard.
+        - the HDRX header with an AMBA AXI master bus port is a physical interface that allows one daughterboard to initiate communication and control actions on the other daughterboard conncted to the V2M-P1 motherboard. This kind of connectivity is useful for expanding the functionality of the system, enabling one board to interact with peripherals or memory on another, thus creating more integrated and flexible testing environment.
 
 * HDRY header with four buses to the motherboard:
     * Static Memory Bus (SMB).
@@ -128,9 +140,54 @@ The daughterboard includes the following features:
     * Configuration BUS (CB).
     * System Bus (SB).
 
+    1. HDRY Header:
+        * Similar to the HDRX header we discussed earlier, the HDRY header is a physical connector on the daughterboard that allows communication with the motherboard. This header specifically has connections for four different types of buses that connect to the motherboard, allowing for versatile communication.
+
+    2. Four buses to the motherboard:
+        * These four buses have different functions, each handling specific types of communication or data transfers between daughterboard and the motherboard.
+        * Static Memory Bus(SMB):
+            * The Static Memory Bus is typically used for connecting static memory devices, like SRAM (Static Random-Access Memory) or flash memory.
+            * Static memory is characterized by being faster and easier to interface compared to dynamic memory (such as DRAM), making it useful for tasks requiring quick and direct memory access.
+        * MultiMedia Bus (MMB):
+            * The MultiMedia Bus is likely used for handling multimedia-related data, such as video or audio data streams.
+            * This bus may be designed to efficiently handle large amounts of data involved in multimedia applications, like image or video rendering, to and from peripherals like cameras or displays.
+        * Configuration Bus (CB):
+            * The Configuration Bus is used to configure different component of the system, possibly including both the daughterboard and the motherboard.
+            * This bus may carry control signals or setup data that tells various hardware components how to initalize, set modes, or configure operational parameters.
+        * System Bus (SB):
+            * The System Bus is likely used for general-purpose communication between the daugtherboard and the motherboard, allowing them to exchange data, instruction, and other important control signals.
+            * This bus may be used to connect different subsystem of the hardware, coordinating the overall operation of the daughterboard within the larger system on the motherboard.
+
 * Power Supply Units (PSUs) for the Cortex-A15 test chip and DDR2 memory.
+    1. **Power Supply Units (PSUs)**:
+        * PSUs are electronic devices that convert electrical energy from an input source (like an electrical outlet) into the appropriate voltage and current needed by the different components in your system.
+        * In a complex setup like the Cortex-A15 development system, having dedicated PSUs ensures that each component receives the correct power required for stable and reliable operation. This is particularly important for chips like the Cortex-A15 and DDR2 memory, which have specific power requirements.
+    2. Cortex-A115 Test Chip
+        * The Cortex-A15 test chip requires a stable power source to ensure it functions correctly without interruptions. The power requirements for the Cortex-A15 might vary depending on whether the chip is running at full speed or in a low-power state, which means the PSU must be capable of providing reliable power across these different states.
+        * Additionally, different parts of the test chip (e.g., the CPU cores, memory controllers, and peripherals) may require different voltages. The PSU or multiple PSUs must provide power rails at these different voltages.
+    3. DDR2 Memory: 
+        * DDR2 memory also has specific power requirements to ensure proper data storage and access. DDR2 typically runs at 1.8V, and providing a stable power supply is crucial for maintaining data integrity and ensuring consistent read/write operations.
+        * A separate PSU or a specialized power rail is often used for memory to make sure it is isolated from other components, reducing noise and fluctuations that could impact the memory's operation.
+        - PSU are critical for providing stable and appropriate power to bththe Cortex-A15 test chip and the DDR2 memory. The power supply must handle the specific voltage and current requirements for each component, ensuring that they operate efficiently and reliably.
 
 * CPU voltage control and current, temperature, and power monitoring.
+    1. CPU Voltage Control 
+        * Voltage control refers to the ability to adjust the voltage supplied to the CPU. This is crucial in a test or development environment for optimizing performance and power consumption.
+        * By adjusting the voltage, you can influence CPU's power usage and thermaloutput:
+            * Lower voltage can help reduce power consumption and heat generation, which is useful when optimizing for energy efficiency.
+            * Higher voltage may be needed when attempting to achieve higher CPU performance, but it typically results in increased power consumption and heat.
+        * In some system, this can be dynamic - meaning the voltage is adjusted in real-time based on the workload. This is a feature known as Dynamic Voltage and Frequency Scaling (DVFS), which is often used to save energy while maintaining performance.
+    2. Current Monitoring:
+        * Current monitoring involves measuring the current (amperage) that is flowing into the CPU. This helps ensure that the CPU is operating within safe limits.
+        * If the current exceeds certain thresholds, it could indicate a potential issue, such as overloading, which could lead to hardware damage. Monitoring the current allows the system to react - perhaps by reducing the load or shutting down parts of the chip - to prevent overheating or damage.
+    3. Temperature Monitoring 
+        * Temperature monitoring is used to track the thermal state of the CPU. Since CPUs generate heat when performing computations, it's important to ensure that the temperature stays within a safe range. 
+        * If the temperature gets too high, it can cause thermal throttling (where the CPU reduces its speed to cool down) or even hardware failure. Modern systems often have temperature sensors to provide real-time feedback to prevent overheating.
+        * Some systems also include features like fan control or liquid cooling systems that respond dynamically to temperature changes, ensuring the CPU remains at an optimal temperature.
+    4. Power Monitoring 
+        * Power monitoring refers to tracking the overall power consumption of the CPU. This includes the product of the voltage and current supplied to the CPU and is measured in watts (W).
+        * Understanding power consumption is crucial, especially in embedded systems or battery-operated devices, where efficiency is key. It's also important for ensuring that the system stays within the power budget and to help identify any unexpected spikes in power that could indicate a problem.
+        * Power monitoring data is also valuable for profiling how much energy different tasks or processes use, allowing developers to optimize software to reduce power usage.
 
 ## 1.2 Precautions.
 
