@@ -1,6 +1,6 @@
 # Development Notes
 *******************
-Taking Notes From Bare-metal programming for ARM - A hands-on guide - Daniels Umanovskis
+# Taking Notes From Bare-metal programming for ARM - A hands-on guide - Daniels Umanovskis
 
 ## 1 The First Boot
 ```
@@ -107,10 +107,192 @@ If `R02=deadbeef`, it means your assembly code executed successfully, and the va
 `0xDEADBEEF` was loaded into register **R2**.
 
 
-
 ## 2 Adding a Bootloader 
 ## 3 Preparing a C environment 
 ## 4 Build & Debug System
 ## 5 UART driver development 
 ## 6 Interrupts
 ## 7 Simple scheduling
+***********************
+
+# Writing ARM assembly code -  
+## Chapter 1 - An overview of computing systems
+Modern devices, such as smartphones and tablets, rely on highly complex System-on-Chip (SoC) designs to perform their multitude of tasks. These SoCs integrate processors, memory, and graphic chips into a single package to save space, reduce power consumption, and improve efficiency. For example, SoCs found in handheld devices handle tasks such as video playback, GPS navigation, and wireless communication.
+### System-on-Chip overview
+1. Definition: An SoC is a combination of processors, memory, and peripherals fabricated into a single chip to perform diverse tasks.
+2. Components: Modern SoCs often include:
+    * Specialized microprocessors
+    * Graphics engines
+    * Floating-point units 
+    * Energy management units
+    * Other devices like USB controllers, timers, and communication interfaces.
+#### Design Trends
+* Reuse of Intellectual Property (IP): To save time and cost, companies often license tested IP blocks (e.g., Cortex-A or Cortex-M processors from ARM) rather than designing microprocessors from scratch.
+* Standardization: Components are designed to meet inudstry standards so that the microprocessors can be swapped without re-engineering the entire system.
+#### Example: Texas Instruments TMS320DM355 SoC:
+* Combines ARM926EJ-S processors with peripherals like:
+    * MPEG4/JPEG coprocessors
+    * DMA controllers 
+    * DDR2/mDDR memory contollers 
+    * USB 2.0 and other I/O interfaces
+#### Micrcontoller integration:
+* Microcontrollers, a simplified form of SoCs, integrate additional useful components like:
+    * Timers 
+    * UARTs (Universal Asynchronous Receiver - Transmitters)
+    * Analog-to-Digital Converters (A/D) These are widely used in cost-sensitive applications such as automotive, toys and industrial devices.
+
+* Key advantages:
+    1. Efficiency: Combines multiple functionalities into a compact, low-power chip.
+    2. Flexibility: Standardized IP allows rapid prototyping and faster design cycles.
+    3. Scalability: Designers can update microprocessors without re-engineering the entire system.
+
+In summary, the rise of SoCs and microcontrollers designs have revolutionized electronics, enabling compact, efficient, and highly functionality devices across various industries.
+
+### History of RISC (Reduced Instruction Set Computers)
+#### Early Computing Challenge 
+* In the 1980s, mainframes dominated computing, with large systems like the DEC VAX series and IBM System/38.
+* Processor designs became increasingly complex, leading to challenges in improving frequency, adding features, and managing power consumption.
+* Designers often relied on techniques like larger fans or external cooling to handle power demands.
+#### Origins of RISC 
+* RISC emerged from research by IBM, Control Data Corporation, and Data General in the late 1960s and early 1970s 
+* In the 1980s, David Patterson and Carlo Sequin at UC Berkeley, and John Hennessey at Stanford, formalized the RISC concept.
+* The goal was to simplify processor design by focusing on small, efficient instruction sets, diverging from the complex instruction set computing (CISC) approach.
+#### Characteristic of RISC Architecture:
+1. Single-Cycle Instructions:
+    * Instructions execute in a single clock cycle.
+    * Simpler hardware design compared to multi-cycle CISC instructions.
+2. Fixed-Length Instructions:
+    * Uniform instruction size simplifies decoding.
+    * Contrasts with CISC designs like Motorola 68000, where instructions vary in size.
+3. Simplified decoding
+    * Fewer instructions mean simpler hardware for decoding.
+    * Register numbers are encoded uniformly within instructions.
+4. No microcode:
+    * RISC eliminates the need for microcode, which in CISC Designs maps high-level instructions to hardware operations.
+    * This avoid complexities like those in VAX instructions (e.g., the "POLY" instruction)
+5. Load/Store Architecture:
+    * Only load and store instructions access memory, with all other operations using registers.
+    * Reduces hardware complexity compared to CISC's direct memory operations.
+6. Optimized Validation:
+    * Simple designs are easier to debug and validate, improving reliability.
+#### Trade-offs and Impact:
+* RISC processors often execute more instructions for the same task, leading to increased program size.
+* However, faster clock speeds and simpler hardware offset these costs, making RISC highly efficient for modern applications.
+* The Berkeley RISC architecture showed a 30% increase in code size but achieved faster execution due to simpler operations.
+#### Evolution of RISC 
+* Early RISC designs like DEC's Alpha and Motorola's 88000 family were powerful but faced limited commercial success.
+* Over time, RISC evolved to incorporate more complex instructions ("feature creep"), blending with traditional CISC approaches.
+* Modern RISC processors, like ARM, balance simplicity with advanced features, far exceeding the original RISC-1 instruction set of 31 operations.
+
+### History of ARM Processors and RISC
+#### Early Beginnings: Acorn Computers
+* ARM traces its roots to Acorn Computers, a UK company known for its desktop PCs in the educational market.
+* In the early 1980s, Acorn developed its own microprocessors to replace the 6502 used in the BBC Micro. This led to the ARM1 processor in 1985, notable for its simplicity (25,000 transistors) and efficiency, achieving functionality on its first attempt.
+#### Transition to ARM Ltd.
+* By 1990, Acorn, along with VLSI Technology and Apple, created ARM Ltd., marking a shift to licensing processor designs rather than manufacturing.
+* The ARM6 processor was an early success, used in Apple's Newton PDA, and introduced features like 32-bit addressing, 4K caches, and MMUs.
+* ARM7TDMI, launched in 1993, became one of ARM's most iconic processors, featuring a "Thumb" instruction set for improved code density and Debug Interface (ICE) for development ease. It saw widespread adoption in mobile devices.
+#### Evolution Through the 1990s and beyond 
+* The ARM8, ARM9, and ARM10 lines followed, improving performance and efficiency.
+* Partnerships like one with DEC (Digital Equipment Corporation) led to custom ARM derivatives like StrongARM, later sold to Intel.
+* By 1998, ARM became a publicly traded company, reflecting its growing prominence.
+#### Architecture Overview 
+* ARM's architecture evolved through various instruction set versions (e.g., ARMV4T, ARMv7-M).
+* Different cores cater to diverse applications:
+    * Application processors: Cortex-A series (e.g., Cortex-A15, A53).
+    * Embedded processors: Cortex-M series. 
+    * Classical processors: Legacy ARM cores like ARM7TDMI. 
+* ARM's model of licensing intellectual property rather than manufacturing processors has made it a dominant force in the microprocessor industry, powering devices from smartphones to embedded systems.
+### ARM Today 
+* By 2002, over 1.3 billion ARM-based devices were in use, largely in mobile phones. Nokia dominated the mobile handset market, powered by ARM processors. TI provided a significant portion of silicon for these devices, alongside other ARM partners like Phillips, Analog Devices, LSI Logic, PrarieComm, and Qualcomm, with ARM7 as the primary processor.
+* ARM's focus extended beyond processor cores to encompass Application Specific Integrated Circuits (ASICs), requiring components like timers, USB interfaces, DSPS, and cell libraries. To meet these needs, ARM acquired several companies: 
+    * 2003: Adelante Technologies (DSP processors).
+    * 2004: Axys Design Automation (hardware tools).
+    * 2005: Keil Software (microcontoller tools).
+    * 2006: Falanx (3D graphics accelerators) and SOISIC (silicon-on-insulator technology).
+* These acquisitions aimed to streamline SoC (System-on-Chip) development, facilitating innovation and broad adoption.
+* By 2012, ARM partner shipped around 8.7 billion ARM-based chips annually, spanning applications like cameras, smart power meters, and home devices. While consumers rarely notice ARM's role, its efficiency and adaptability have cemented its dominance in the tech industry.
+### The Cortex family
+#### Overview of Cortex Families 
+* ARM has divided its processors cores into three families based on applications requriements: Cortex-A, Cortex-R, and Cortex-M. Each family is tailored for specific performance, power, and functionality needs. 
+    * *Cortex-A*: Designed for high-performance applications like smartphones, tablets, servers, and desktops. These cores support complex operating systems like Linux and Android and often include large caches, arithmetic blocks, and memory management units (MMUs). Examples include the Cortex-A5, A9, and A15 cores. 
+    * *Cortex-R*: Optimized for real-time and safety-critical applications such as automoative systems (e.g., anti-lock braking) and medical devices. These cores ensure deterministic behavior, essential for systems requiring precise timing and safety redundancy. Exaples include the Cortex-R4, R5 and R7.
+    * *Cortex-M*: Focused on deeply embedded microcontroller applications like remote sensors, displays, and industrial robotics. These cores are cost-efficient, low-power and simple to program. Popular cores include the Cortex-M0, M0+, M3, and M4, with the latter supporting signal processing and floating-point arithmetic.
+#### Design Highlights:
+* The Cortex-M series caters to low-power devices, featuring minimal gate counts and compact instruction sets (e.g., 56 instructions for Cortex-M0).
+* The Cortex-A series prioritizes computational horsepower for modern, feature-rich devices.
+* The Cortex-R series bridges the gap by providing real-time reliability for embedded systems needing robust error handling and precise execution.
+#### Industry adoption
+* ARM's Cortex family is hihgly versatile, enabling tailored SoC designs across industries. For example:
+    * Cortex-A cores are widely used in smartphones and tablets.
+    * Cortex-R cores appear in automotive and medical safety systems.
+    * Cortex-M cores dominate the microcontroller market for industrial and IoT applications. 
+* By addressing diverse needs, ARM's Cortex family ensures scalability, efficiency, and widespread adoption across computing and embedded markets.
+### The Computing Device 
+* At its core, a computing device executes specific instructions or commands using mechanisms like paper tape, switches, or magnetic materials. Machines do not need to be electronic to compute. For example, in 1804, Joseph Marie Jacquard used punched cards to control a silk loom, a concept later adapted in computers. By the 1960s, punched cards fed programs into computers, often requiring precise numbering to avoid errors.
+* A stored program computer fetches instructions from memory to execute tasks. This model divideds the system into three main components:
+    1. **Processor**: Performs computations and processing tasks.
+    2. **Memory**: Stores instructions and data.
+    3. **Busses**: Transfers data and instructions between components.
+* Assembly language programming focuses on fundamental processor operations, making it easier for humans to write machine-level instructions.
+#### Embedded System and Modern Interfaces
+* Unlike traditional systems with peripherals like keyboards or monitors, embedded systems often interface directly with sensors and system-on-chip designs. For example, an engine controller gathers data from sensors and processes it internally without user interaction. 
+#### Hierarchy of computing 
+* Understanding computing involves moving through a hierarchy:
+    * Transistors: Basic switches controlling electrical flow.
+    * Gates: Combinations of transistors performing logical operations.
+    * Microarchitecture: Specific processor behavior and control.
+    * Instruction Set Architecture (ISA): Defines commands the processor understands.
+    * Language: Higher-level tools like C++ or Java, built upon the ISA. 
+    * Applications/OS: Systems like Linux that run programs on hardware. 
+* Assembly language resides at the ISA level, bridging the gap between raw hardware and high-level programming languages.
+### Number Systems and Binary Basics 
+#### Binary Number System 
+* Computers operate using the binary system (base 2), as transistors only understand two states: 1 or 0.
+* Binary numbers represent powers of 2 instead of 10. For example:
+    * Decimal: 0, 1, 2, 3, ...
+    * Binary: 0, 1, 10, 11, ... (where 10 represents 2 in decimal).
+* Example Conversion: 1101012 to decimal:
+    * 25 + 24 + 22 + 20 = 32 + 16 + 4 + 1 = 5310
+#### Hexadecimal System (Base 16)
+* Hexadecimal is commonly used for its compact representation of binary data.
+* Digits range from 0-9 and A-F (A=10, B=11, ..., F=15).
+* Example Conversion: A5E916 to decimal:
+    * (10 x 163) + (5 x 162) + (14 x 161) + (9 x 160) = **42,47310**
+* Decimal to Hexadecimal Conversion:
+    * Steps:
+        1. Divide the decimal number by 16.
+        2. Record the remainder.
+        3. Continue dividing until the quotient is 0.
+        4. Writer remainders in reverse order.
+    * Example: Convert 86210 to hexadecimal:
+        * 862 / 16 = 53 R14 (E)
+        * 53 / 15 = 3 R5 
+        * 3 / 16 = 0 R3 
+        * Result: 35E16 
+* Binary and Hexadecimal Relationship 
+    * Binary groups of 4 bits directly map to one hexadecimal digit: 
+        * Binary: 1101 1111 0000 1010 1111 
+        * Hexadecimal: DF0AF16 
+    * Table of Equivalents: 
+        * Decimal: 0, 1, ..., 15.
+        * Binary: 0000, 0001, ..., 1111 
+        * Hexadecimal: 0, 1, ..., F.
+* By understanding these relationship, programming tasks involving memory and low-level data manipulation become much clearer. 
+## Chapter 2 - The Programmer's Model 
+## Chapter 3 - Introduction to Instruction Sets: v4Y and v7-M
+## Chapter 4 - Assembler Rules and Directives
+## Chapter 5 - Loads, Stores, and Addressing 
+## Chapter 6 - Constants and Literal Pools 
+## Chapter 7 - Integer Logic and Arithmetic 
+## Chapter 8 - Branches and Loops 
+## Chapter 9 - Introduction to Floating-Point: Basics, Data Types, and Data Transfer
+## Chapter 10 - Introduction to Floating-Point: Rounding and Exceptions
+## Chapter 11 - Floating-Point Data-Processing Instructions 
+## Chapter 12 - Tables 
+## Chapter 13 - Subroutines 
+## Chapter 14 - Exception Handling: ARM7TDMI
+## Chapter 15 - Excepttion Handling: v7-M 
+## Chapter 16 - Memory-Mapped Peripherals 
+## Chapter 17 - ARM, Thumb and Thumb-2 Instructions 
+## Chapter 18 - Mixing C and Assembly
