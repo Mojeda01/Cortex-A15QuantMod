@@ -189,10 +189,269 @@ The daughterboard includes the following features:
         * Understanding power consumption is crucial, especially in embedded systems or battery-operated devices, where efficiency is key. It's also important for ensuring that the system stays within the power budget and to help identify any unexpected spikes in power that could indicate a problem.
         * Power monitoring data is also valuable for profiling how much energy different tasks or processes use, allowing developers to optimize software to reduce power usage.
 
-## 1.2 Precautions.
+### Figure 1-1 CoreTile Exress A15x2 daughterboard layout (p:15) Notes. 
+1. Cortex-A15 MPCore Test Chip
+    * This is the heart of the daughterboard, housing the ARM Cortex-A15 processor. It is used to test the core's capabilities, run applications, and evaluate performance in a controlled environment.
+2. JTAG Interface 
+    * Located at the top of the board, the JTAG (Join Test Action Group) connector is used for debugging and testing. It allows developers to connect external debuggers for low-level access to the processor and other hardware components. 
+3. TRACE Connectors (Dual and Single)
+    * These connectors enable trace debugging.
+    * Dual TRACE: Supports dual-channel trace capture for detailed execution analysis.
+    * Single TRACE: Provides single-channel trace capability for simpler setups.
+    * Tracing is critical for debugging complex software and analyzing processor execution paths.
+4. Cortex-A15 Power Supply Unit (PSU)
+    * The PSU ensures the Cortex-A15 chip receives stable power. It is specifically designed to meet the voltage and current requirements of the processor.
+5. DDR2 Memory Banks
+    * There are four DDR2 memory slots, which provide the daughterboard with high-speed RAM. These slots are essential for running applications and workloads on the Cortex-A15 processor.
+    * The memory slots are located at the bottom of the board, ensuring easy access for upgrades or replacements. 
+6. DDR Power Supply Unit (PSU)
+    * Dedicated to powering the DDR2 memory modules, this PSU ensures stable power delivery, preventing issues caused by fluctuating voltages. 
+7. HDRX and HDRY Headers
+    * These headers are located on the lower face of the daughterboard (facing the motherboard).
+    * They facilitate connections to other boards or systems. These headers are crucial for interfacing the daugtherboard with the host system.
+#### Component Placement and Orientation
+* Most components (Cortex-A15 chip, DDR slots, TRACE connetors, and PSUs) are mounted on the upper face of the daughterboard, facing away from the motherboard.
+* The HDRX and HDRY headers are on the lower face, positioned to connect directly to the motherboard.
+#### Purpose and Usage 
+* This daughterboard is designed for developers to:
+    * Test and debug applications in real-time on a Cortex-A15 processor.
+    * Analyze processor behavior using JTAG and TRACE tools.
+    * Evaluate memory performance and optimize applications utilizing DDR2 RAM.
+* Understanding this layout helps in effectively connecting and utilizing the CoreTile Express A15x2 for development and debugging tasks.
 
 # Chapter 2 - Hardware Description
+This chapter describes the hardware on the CoreTile Express A15x2 daughterboard. It contains the following sections:
+* CoreTileExpress A15x2 daughterboard architecture
+* Cortex-A15 MPCore test chip
+* System interconnect signals
+* Power-up configuration and resets
+* Voltage, current, power, temperature, and energy Monitoring
+* Clocks
+* Interrupts
+* HDLCD 
+* DDR2 memory interfaces
+* Debug 
 ## 2.1 CoreTile Express A15x2 daughterboard architecture.
+* Notes on Figure 2-1 shows a block diagram of the daughterboard.
+    * *Key Components*
+        1. Cortex-A15 MPCore Test Chip:
+            * This is the main processing unit (CPU) on the daughterboard.
+            * It houses the Cortex-A15 cores and supports multicore processing for high-performance computing.
+            * "Test Chip" indicates this board is designed for development and testing purposes.
+        2. DDR2 Memory (2GB, 32-bit):
+            * This represents the external memory module connected to the CPU.
+            * DDR2 memory provides fast access data and is used for storing programs and data while they are being executed.
+        3. JTAG/SWD (DAP/TAP):
+            * JTAG (Joint Test Action Goup) and SWD (Serial Wire Debug) are debugging interfaces.
+            * They allow developers to interact with the CPU, debug programs, and test functionality at the hardware level.
+        4. Trace Interfaces:
+            * Trace Dual (32 bit) and Trace Single (16-bit):
+                * These are debugging tools that record execution information about the CPU in real-time.
+                * The "32-bit" or "16-bit" indicates the width of the trace data bus.
+        5. AXI Master Interface:
+            * AXI (Advanced eXtensible Interface) is part of the ARM AMBA (Advanced Microcontroller Bus Architecture).
+            * The AXI master allows the CPU to communicate with external devices or peripherals efficiently.
+    * *Peripheral Connections*
+        1. HDLCD:
+            * This is a High-Definition Liquid Crystial Display controller interface.
+            * It handles video output, allowing you to connect the board to a display.
+        2. Static Memory Bus (SMB):
+            * This is a simple interface to connect to static memory devices, such as SRAM or ROM.
+    * *Control or Configuration*
+        1. Clock Generation Logic:
+            * Generates the necessary clock signals for the CPU and peripherals to function.
+        2. Daughterboard configuration Controller:
+            * Manages configuration settings for the board.
+            * It works with the Configuration EEPROM, a small memory module storing board-specific settings.
+        3. Serial Configuration and Interrupts:
+            * Serial Configuration: Used for initial setup or firmware updates. 
+            * Interrupts: Allow peripherals to signal the CPU when they need attention. 
+    * *Headers and Connections*
+        1. HDRY,HDRX:
+            * These are headers for connecting the daughterboard to other components or a baseboard.
+            * HDRY is used for static memory and related signals, while HDRX is for high-speed signals.
+        2. CB, SB, MMB:
+            * These represent specific buses or connections for controlling the board's configuration and functionality.
+    * *How it works together:*
+        * The Cortex-A15 CPU performs computations and accesses data stored in DDR2 memory or other memory devices through the static memory bus.
+        * Debugging and development are faciliteted via the JTAG/SWD and trace interfaces.
+        * The configuration and clock logic ensure the board operates correctly and is set up according to the developer's needs.
+        * Headers (HDRY/HDRX) and buses (CB/SB/MMB) allow integration with other hardware or baseboards for extended functionality.
+
+The daughetboard contains the following devices and interfaces:
+* Cortex-A15 MPCore test chip:
+    * The Motherboard Configuration Controller (MCC) and the daughterboard configuration controller configure the test chip at power-up or reset.
+    * This extra note explains the *Motherboard Configuration Controller (MCC)* and the *Daughterboard Configuration Controller (DCC)* in initializing the Cortex-A15 MPCore test chip during power-up or reset.
+    * *Key Components*:
+        1. Motherboard Configuration Controller (MCC):
+            * Function:
+                * The MCC is responsible for configuring system-wide settings that involve both the motherboard and connected daughterboards.
+                * It initalizes key components, such as clocks, voltage regulators, and system interconnects.
+        2. Daughterboard Configuration Controller (DCC):
+            * Function:
+                * The DCC specifically handles configuration for components on the daughterboard, including the Cortex-A15 test chip.
+                * It communicates with the MCC to synchronize initialization with the rest of the system.
+    * *Configuration at Power-Up or Reset*:
+        * Purpose of Configuration:
+            * When the board powers up or is reset, the hardware needs to be configured to prepare the CPU and other components for operation. This process sets up initial parameters, such as:
+                * Clock frequencies
+                * Power states 
+                * Reset states for different subsystems
+                * Memory mappings
+        * Sequence:
+            1. The MCC begins the process by setting system-wide parameters.
+            2. The MCC works with the DCC to relay specific instructions for the Cortex-A15 test chip
+            3. The DCC then applies these configurations to initialize the test chip, enabling it to operate as intended.
+        * Collaboration between MCC and DCC
+            * Both controllers are interdependent:
+                * The MCC provides overarching system-level control.
+                * The DCC handles detailed, chip-specific configurations.
+* Daughterboard Configuration Controller
+    * The Daughterboard Configuration Control initiates, controls, and configures the test chip.
+    * An MCC on the Motherboard Express $\mu$ATX configures the daughterboard and communicates with the DCC to configure the test chip.
+    * Key Points:
+        1. Daughterboard Configuration Controller (DCC):
+            * Role:
+                * The DCC is specifically responsible for the initialization, control, and configuraiton of the test chip (Cortex-A15 MPCore) on the daughterboard.
+                * It acts as the central component for managing chip-level settings and operational states.
+            * Tasks:
+                * Set up the test chip during power-up or reset. 
+                * Enable or disable specific functionalities of the test chip based on system requirements.
+                * Manage configuration updates if the system requires reprogramming or changes. 
+        2. Motherboard Configuration Controller (MCC):
+            * Role:
+                * The MCC resides on the motherboard (e.g., Express $\mu$ATX) and oversees systemwide configuration.
+                * It acts as the "manager" that configures not just the motherboard but also connected daughterboards.
+            * Interaction with DCC:
+                * The MCC sends instructions to the DCC.
+                * The DCC takes these instructions and applies them to the test chip for its specific initialization and setup.
+    * How they work together:
+        * System Startup Process:
+            1. When the system powers on or resets, the MCC begins the overall system configuration. 
+            2. The MCC identifies the daugtherboard and sends the necessary configuration data to the DCC.
+            3. The DCC uses this data to initialize the Cortex-A15 test chup and prepare it for operation. 
+        * Advantages of this design:
+            * Modularity:
+                * The MCC focuses on high-level system coordination, while the DCC specializes in chip-specific tasks.
+                * This separation allows flexibility in managing complex systems with multiple daughterboards or components.
+            * Scalability:
+                * New daugtherboards can be added with their own DCCs, which the MCC can manage without needing changes to the core architecture.
+
+* Configuration EEPROM 
+    * The daughterboard EEPROM contains information for identification and detection of the daughterboard.
+    * Key Details:
+        1. What is an EEPROM?
+            * EEPROM stands for Electrically Erasable Programmable Read-Only Memory.
+            * It is a small, non-volatile memory chip that retains stored data even when the system is powered off.
+        2. Purpose of the Configuration EEPROM:
+            * The EEPROM on the daughterboard stores *identification and detection information*.
+            * This information is essential for the motherboard or system software to recognize and configure the daughterboard correctly.
+        3. Contents of the EEPROM:
+            * Identification Data:
+                * Information about the specific daughterboard model, version, and capabilities.
+                * This helps the system distinguish between different daughterboard.
+            * Detectin Data:
+                * Parameters or metadata needed for system initialization, such as:
+                    * Supported features.
+                    * Required clock frequencies.
+                    * Memory mapping or address ranges.
+        4. How it Works:
+            * When the daughterboard is conncted to the system, the motherboard (through the MCC) reads the EEPROM data.
+            * This data informs the system how to properly initializae and configure the daughterboard for operation.
+        5. Why is it Important?
+            * Automatic Configuration: The EEPROM simplifies system setup by automating the detection and configuration of the daughterboard.
+            * Scalability: Systems with multiple or interchangeable daughterboards can adapt dynamically by referencing the EEPROM data. 
+
+* DDR2 memory
+    * The daughterboard supports 2GB of 32-bit DDR2 on-board memory.
+    1. DDR2 Memory:
+        * DDR2 stands for Double Data Rate 2:
+            * A type of synchronous dynamic random-access memory (SDRAM).
+            * known for faster data transfer rates and lower power consumption compared to earlier DDR1 memory.
+    2. Specifications on the Daughterboard:
+        * Capacity: 2 GB (Gigabytes)
+            * This is the amount of memoery available for use by the system.
+        * Bus Width: 32-bit.
+            * The 32-bit width refers to the number of bits that can be transferred in parallel, impacting how much data can be accessed in a single operation.
+        * On-Board: The memory is directly integrated into the daughterboard, eliminating the need for external modules.
+    3. Purpose of DDR2 Memory:
+        * Used as the main system memory by the Cortex-A15 test chip.
+        * Stores:
+            * Executable programs.
+            * Data actively being used or processed by the CPU.
+            * Temporary data for tasks like caching or buffering.
+    4. Advantages of On-Board DDR2:
+        * Integrated Design:
+            * Reduces latency as the memory is physically close to the CPU.
+        * Preconfigured
+            * Simplifies system setup, as the memory preinstalled and pretested for compatibility with the daugtherboard.
+    5. Why is this important?
+        * Having 2GB of fast, 32-bit DDR2 memory ensures the system has enough capacity and speed for:
+            * Testing high-performance applications.
+            * Simulating complex workloads.
+            * Supporting multi-core functionality of the Cortex-A15.
+    * Real-World Use Case:
+        * During development, the DDR2 memoery is where your bare-metal programs will be loaded and executed.
+        * For instance, if you're running a test program to verify processor instructions or memory access, it will execute from this DDR2 memory.
+
+* Clock generators
+    * The daugtherboard provides nine on-board OSCCLKS to drive the CPU and internal AXI, AXIM, DDR2, SMC, and HDLCD interfaces.
+    1. Clock generators
+        * Clock generators are circuits that produce clock signals, which are essential for synchronizing the operation of various components in the system.
+        * The daugtherboard includes nine on-board OSCCLKs (Oscillators Clock Soures).
+    2. Purpose of OSCCLKs
+        * These clocks are used to provide timing signals that drive:
+            * CPU: The Cortex-A15 test chip requires precise clock signals to operate its cores and internal logic.
+        * AXI and AXIM Interfaces:
+            * AXI (Advances eXtensible Interface) is a high-performance bus for communication between the CPU and other system components.
+            * AXIM (AXI Master) is a specific implementation of AXI for master devices like CPUs.
+        * DDR2 Memory Interface: Ensures proper timing for data access in DDR2 memory.
+        * SMC (Static Memory Controller): Handles timing for communication with static memory, such as ROM or SRAM.
+        * HDLCD (High-Definition LCD Controller): Synchronizes video output signals for displays.
+    3. Why Nine Clocks?
+        * Different components require clock signals at varying frequencies for optimal performance.
+        * Multiple clock sources allow fine-grained control over each subsystem, enabling the system to:
+            * Operate efficiently.
+            * Scale performance based on workload.
+            * Reduce power consumption by adjusting clock frequencies dynamically.
+    4. Importance of Clock generators
+        * They ensure all parts of the system operate in harmony, maintaining synchronization across components.
+        * Accurate clock signals are critical for reliable operation, especially in high-speed or real-time applications.
+    * Real-World Use Case:
+        * For example, when running bare-metal code on the Cortex-A15, the CPU clock determines the execution speed of instructions, while the DDR2 clock ensures timely memory access. Misconfigured clocks can lead to system instability or poor performance.
+
+* CoreSight software debug and trace ports
+    * The Cortex-A15 MPCore test chip CoreSight system supports the SWD and JTAG protocols.
+    * A 32-bit trace interface is provided through the standard dual 16-bit Matched Impedance ConnecTOR (MICTOR) connectors.
+    1. CoreSight System:
+        * CoreSight is ARM's infrastructure for debugging and tracing embedded systems.
+        * It provides tools and protocols to monitor, analyze, and debug the internal operations of the Cortex-A15 MPCore.
+    2. SWD and JTAG Protocols:
+        * SWD (Serial Wire Debug):
+            * A lightweight, two-wire debugging protocol.
+            * It is optimized for embedded systems with limited pin availability.
+        * JTAG (Joint Test Action Group):
+            * A traditional debugging interface widely used for hardware testing and debugging.
+            * Provides access to internal registers and memory for diagnostics.
+    3. Trace Interface:
+        * The daughterboard provides a 32-bit trace interface:
+            * This allows developers to record the execution flow of the processor in real time.
+            * Useful for performance analysis and debugging.
+        * The 32-bit interface is implemented as a dual 16-bit connection.
+            * This splits the trace data into two 16-bit channels for transmission.
+    4. MICTOR (Matched Impedance Connector):
+        * Purpose:
+            * The trace interface uses MICTOR connectors, which are specialized connectors designed for high-speed data transmission with minimal signal degradation.
+            * Ensures reliable communcation between the processor and external debugging equipment.
+        * Structure:
+            * Dual 16-bit configuration means the MICTOR connectors handle two parallel data streams, combining them into a 32-bit trace output.
+
+* Why are debug and trace ports importants?
+    * SWD/JTAG
+        * Enable developers to step through program execution, inspect memory/registers states, and diagnose hardware.
+    * Trace Interface:
+        * Provides detailed insights into processor behavior without halting execution.
+        * Ideal for analyzing complex, time-sensitive operations or debugging hard-to-reproduce issues.
 ## 2.2 Cortex-A15 MPCore test chip
 ## 2.3 System interconnect signals
 ## 2.4 Power-up configuration and resets

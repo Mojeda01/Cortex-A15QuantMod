@@ -105,8 +105,6 @@ R00=00000000 R01=000008e0 R02=deadbeef R03=00000000
 
 If `R02=deadbeef`, it means your assembly code executed successfully, and the value 
 `0xDEADBEEF` was loaded into register **R2**.
-
-
 ## 2 Adding a Bootloader 
 ## 3 Preparing a C environment 
 ## 4 Build & Debug System
