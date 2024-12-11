@@ -105,14 +105,77 @@ R00=00000000 R01=000008e0 R02=deadbeef R03=00000000
 
 If `R02=deadbeef`, it means your assembly code executed successfully, and the value 
 `0xDEADBEEF` was loaded into register **R2**.
-## 2 Adding a Bootloader 
+
+## 2 Adding a Bootloader - We are going to use BareBox instead of Das U-Boot
+### 1 User Manual
+* 1.2. barebox 
+    1. Cloning the barebox repository:
+        ```
+        git clone git://git.pengutronix.de/git/barebox.git
+
+        ```
+        * This command clones the Barebox Git repository to your local machine.
+        * It ensures you have the latest version of the Barebox source code or a specific branch to work with.
+    2. Setting architecture and Cross Compiler:
+        ```
+        export ARCH=arm
+        export CROSS_COMPILE=/path/to/arm-cortexa8-linux-gnueabihf-
+
+        ```
+        * `ARCH=arm`: Specifies the target architecture.
+        * `CROSS_COMPILE`: Sets the path or prefix for the ARM cross-compiler toolchain.
+    3. Configuring Barebox for a board:
+        ```
+        make imx_v7_defconfig
+
+        ```
+        * Selects a specific board configuration file for building Barebox.
+        * Replace `imx_v7_defconfig` with the desired board configuration for your setup.
+    4. Customizing Configuration:
+        ```
+        make menuconfig
+
+        ```
+        * Launches an interactive menu for customizing Barebox build configurations.
+        * Use this to tweak settings such as driver support or specific board features.
+    5. Out-of-Tree Builds:
+        ```
+        export KBUILD_OUTPUT=.../my_barebox_build_directory
+
+        ```
+        * Keeps build artifacts separate from the source tree, ensuring a clean source directory.
+        * All subsequent `make` commands output to the specified directory.
+        * **Important:** Run `make distclean` in the source directory before out-of-tree builds if previously used for in-tree builds.
+    6. Compiling Barebox:
+        ```
+        make
+
+        ```
+        * Initiates the build process for Barebox.
+        * The generated images are placed in the `images/` directory.
+        * output examples (based on board):
+        ```
+        barebox-freescale-imx53-loco.img
+        barebox-tq-mba53-1gib.img
+
+        ```
+        * These images are ready for flashing onto the target board or for use in an emulator like QEMU.
+### 2 Filesystems 
+### 3 Commmand reference 
+### 4 Board Support 
+### 5 Glossary
+### 6 Bareboax devicetree handling and bindings 
+### 7 Barebox programming 
+
+
+
 ## 3 Preparing a C environment 
 ## 4 Build & Debug System
 ## 5 UART driver development 
 ## 6 Interrupts
 ## 7 Simple scheduling
 ***********************
-
+***********************
 # Writing ARM assembly code -  
 ## Chapter 1 - An overview of computing systems
 Modern devices, such as smartphones and tablets, rely on highly complex System-on-Chip (SoC) designs to perform their multitude of tasks. These SoCs integrate processors, memory, and graphic chips into a single package to save space, reduce power consumption, and improve efficiency. For example, SoCs found in handheld devices handle tasks such as video playback, GPS navigation, and wireless communication.
@@ -277,8 +340,194 @@ In summary, the rise of SoCs and microcontrollers designs have revolutionized el
         * Binary: 0000, 0001, ..., 1111 
         * Hexadecimal: 0, 1, ..., F.
 * By understanding these relationship, programming tasks involving memory and low-level data manipulation become much clearer. 
-## Chapter 2 - The Programmer's Model 
-## Chapter 3 - Introduction to Instruction Sets: v4Y and v7-M
+## Chapter 2 - The Programmer's Model
+### 2.1 Introduction 
+Programmers usually don't need to know the physical construction of a microprocessor, such as its wires or transistors. Instead, they rely on the "programmer's model", which provides a high-level view of the processor's functionality. This includes details like data storage locations, behavior during invalid instructions, and how registers are managed during exceptions. The text introduces the programmer's models for ARM7TDMI and Cortex-M4, with plans to revisit related topics like branching, stacks, and exceptions in later chapters. For now, the focus is on covering the basics needed to start programming.
+
+* *Personal Note:*
+    * If someone wanted to incorporate blackjack mathematics into their programming, they could model the game's logic by leveraging the processor's features. This would involve defining the rules of the game, tracking the deck of cards using arrays or similar data structures, calculating probabilities of drawing specific cards, and implementing decision-making algorithms. The programmer could also optimize these computations by using low-level operations available in the processor, such as efficient branching for decision trees or specialized registers for probability calculations.
+
+### 2.2 Data Types 
+Data in computers is represented as binary digits, or bits, where each bit can either be a 0 or a 1. These bits are grouped into units of eight, known as bytes, or into larger units, depending on the device's architecture. For example, a 16-bit data value is referred to as a "word" in processors like the Intel 8086 or MC68040, while in ARM cores, a 32-bit data value is called a word. Both instructions and data are often described with their bit length, such as 16-bit instructions or 32-bit data.
+
+Specifically, the ARM7TDMI and Cortex-M4 processors support data types in sizes 0, 4, 8, or C (hexadecimal). Notably, the Cortex-M4 allows unaligned memory access under specific conditions, enabling the reading or writing data from odd memory addresses. Memory access details will be explored further in addressing modes in Chapter 5. Most operations, such as additions (ADD), are performed on word-sized data, but smaller 16-bit values are also supported in later contexts.
+
+### 2.3 ARM7TDMI 
+The purpose of examining the ARM7TDMI programmer's model is to highlight its similarities to more advanced cores like the Cortex-A and Cortex-R processors, which build on the ARM7TDMI's foundation while adding numerous features and modes. Despite its simplicity - featuring only a three-stage pipeline compated to the Cortex-A15's complex fifteen-stage out-of-order pipeline - the ARM7TDMI provides sufficient depth to introduce concepts like modes and exceptions without overwhelming detail.
+
+It is also important to note that certain features are consistent across all ARM processors, through they may vary in number, purpose, and limitations. For example, the integer register file in the Cortex-M4 functions similarly to that of the ARM7TDMI, but with fewer registers. This exploration of the programmer's model begins with an overview of the processor modes.
+
+#### 2.3.1 Processor Modes 
+Version 4T cores operates in seven processor modes: User, FIQ, IRQ, Supervisor, Abort, Undefined and System, as outlined in Figure 2.1. Mode changes can be triggered by software control but are typically caused by external events or exceptions. Most application programs run in User mode. The other modes, known as priveliged modes, allow the processor to handle exceptions or access restricted resources. These resources include features like disabling certain sections of the processor, such as the branch predictor or caches, if they are available.
+
+* *Personal notes Figure 2.1 - Processor modes:*
+    1. Modes overview:
+        * ARM processors operate in different modes to handle various tasks and exceptions.
+        * These modes are categorized into **privileged modes** (for exceptions and system-level tasks) and an **unprivileged mode** (for regular application tasks).
+    2. Privileged Modes:
+        * Supervisor (SVC):
+            * Entered during system resets or when a Software Interrupt (SWI) instruction is executed.
+            * Used for system-level operations like kernel execution.
+        * FIQ (Fast Interrupt):
+            * Entered when a high-priority, fast interrupt is triggered.
+            * Used for time-critical tasks, such as real-time signal handling.
+        * IRQ (Interrupt):
+            * Entered during a low-priority, standard interrupt.
+            * Handles general-purpose interrupt-driven tasks.
+        * Abort:
+            * Activated when memory access violation occur.
+            * Used to manage errors such as accessing invalid or restricted memory regions.
+        * Undefined (Undef):
+            * Triggered by the execution of undefined instructions.
+            * Allows the system to manage unsupported or invalid operations.
+        * System:
+            * A privileged mode that uses the same register set as User mode.
+            * Typically used for background system-level operations without switching to exception handling.
+    3. Unprivileged Mode:
+        * User:
+            * Default mode for most application and operating system tasks.
+            * Lacks access to certain system-level resources and instructions, ensuring safety and isoliation.
+    4. Key Notes:
+        * Mode transitions are generally triggered by exceptions or software instructions.
+        * Privileged modes provide access to critical system resources, such as disabling caches or the branch predictor.
+        * Exception handling is tightly integrated into mode management, allowing robust error handling and system control.
+    * This structure ensures efficient and secure management of system resources, interrupts, and errors in ARM-based processors.
+
+A mode can be viewed as an indicator of what the processor is currently doing. Under normal  conditions, the processor typically operates in either User Mode or Supervisor mode, exeucting code as expected. For instance, in devices like cell phones, where minimal activity occurs until an event such as a signal or user interaction happens, the processor may power down partially, awaiting an interrupt to wake it. Interrupts, triggered by external events, prompt the processor to act. The ARM7TDMI handles two types of interrupts: a high-priority, fast interrupt (FIQ) and a lower-priority interrupt (IRQ). FIQ mode is used for critical tasks, like handling power loss within milliseconds, while IRQ mode handles less urgent tasks, such as servicing peripherals or respknding to user input.
+
+Abort mode helps the processor recover from exceptional situations, such as attempts to access invalid memory locations for instructions or data. This mode is also essential for supporting features like virtual memory, commonly used in operating systems like Linux.
+
+Undefined mode is triggered when the processor encounters an instruction it cannot recognize in the pipeline. At this point, it becomes the responsibility of the programmer or operating system to handle the error. Historically, this mode was also used for supporting floating-point instructions on hardware without built-in floating-point capabilities, though modern systems rarely rely on it.
+
+For most scenarios, work focuses on User and Supervisor modes, with interrupts and exceptions discussed in greater detail in Chapter 14.
+
+#### 2.3.2 registers
+* *Personal Notes on Figure 2.2 Register organization*
+    1. General Overview:
+        * ARM processors, including the ARM7TDMI, utilize a set of registers for data storage and operations.
+        * Registers are organized into **User/System mode registers** and **banked registers**a, which are mode-specific.
+        * The banked registers are highlighted in gray, indicating they are unique to specific processor modes (e.g., Supervisor, Abort, Undefined, IRQ, FIQ).
+    2. User/System Mode Registers:
+        * Registers R0 to R12 are shared across all modes.
+        * These registers are general-purpose and available in user mode as well as privileged modes.
+    3. Banked Registers:
+        * Registers R13 (Stack Pointer) and R14 (Link Register) are banked for each mode (e.g., R13_SVC for Supervisor mode).
+        * Banked registers allow each mode to maintain its own context, such as a unique stack or return address, preventing interferene between modes.
+        * This is critical for handling exceptions for interrupts efficiently, as each mode can operator independently.
+    4. Program Counter (PC):
+        * The PC is shared across all modes and holds the address of the current instruction being executed.
+    5. Status Registers:
+        * The CPSR (Current Program Status Register) is shared and reflects the processor's current, including mode, interrypt status, and condition flags.
+        * Each mode has a SPSR (Saved Program Status Register) to save the CPSR during exceptions or interrupts, allowing the processor to restore the original state when returning to the previous mode.
+    6. Mode-Specific Highlights:
+        * FIQ Mode:
+            * Has the most banked registers (R8_FIQ to R14_FIQ), optimized for fast interrupt handling and reducing context-switching overhead.
+        * IRQ Mode:
+            * Uses its own R13_IRQ and R14_IRQ to handler lower-priority interrupts without affecting other modes.
+        * Supervisor, Abort, and Undefined Modes:
+            * Each mode has unique R13 and R14 registers, ensuring isolated stack management and return addresses during their specific operations.
+    7. Why Banked Registers Are Important:
+        * Banked registers minimize the overhead of saving/restoring context during mode switches, especially for interrupts and exceptions.
+        * This design enhances performance and ensures reliability in real-time and multi-tasking systems.
+    * Summary:
+        * This register organization allows efficient mode transitions and context management, making ARM processors well-suited for embedded systems and applications requiring real-time responsiveness.
+
+* *Personal Notes on Figure 2.3 ARM7TDMI pipeline diagram*
+    1. Overview:
+        * The ARM7TDMI processor uses a three-stage pipeline: Fetch, Decode, and Execute.
+        * The pipeline improves performance by overlapping the execution of multiple instructions, allowing different stages of multiple instructions to occur simultaneously.
+    2. Pipeline Stages:
+        * Fetch:
+            * The instruction is retrieved from memory.
+            * The Program Counter (PC) holds the address of the current instruction in ARM and Thumb modes.
+        * Decode:
+            * The fetched instruction is paralyzed, and the required registers for the operation are identified.
+            * In this stage, the processor interprets the instruction to determine the operation and operands.
+        * Execute:
+            * The operation is performed using the Arithmetic Logic Unit (ALU) or other processor resources.
+            * Data is read from or written back to the Register Bank as needed.
+    3. PC Adjustments:
+        * In ARM mode:
+            * The PC adjusts in increments of 4 bytes (as ARM instructions are 4 bytes long).
+        * In Thumb mode:
+            * The PC adjusts in increments of 2 bytes (As Thumb instructions are 2 bytes long, making them more compact).
+    4. Pipeline Behavior:
+        * During execution, the pipeline ensures that while one instruction is being executed, the next is being decoded, and a third is being fetched. This overlapping process significantly increases throughput.
+        * Example:
+            * When the instruction in Fetch moves to Decode, a new instruction is fetched, maintaining a steady flow.
+    5. Key Points:
+        * The pipeline design reduces instruction latency by handling multiple instructions in parallel.
+        * The adjustments in PC for ARM and Thumb modes ensure compatibility with both instruction sets.
+    6. Applications:
+        * The pipeline structure is fundamental to achieving higher efficiency in embedded systems where ARM7TDMI processors are used, such as in real-time applications and low-power devices.
+    * This diagram showcases how ARM7TDMI optimizes instruction execution through a streamlined pipeline process, balancing simplicity and performance.
+
+* *Personal Notes on Figure 2.4 Format of the program status registers*
+    * The Program Status Register (PSR) in ARM architecture holds critical information about the processor's state, including condition flags, interrupt settings, and mode control.
+    1. Condition Flags (Bits 31-28):
+        * N (Negative): Indicates whether the result of the last arithmetic operation was negative.
+        * Z (Zero): Set if the result of the last operation was zero.
+        * C (Carry): Indicates a carry out from the most significant bit in an addition or a borrow in a subtraction.
+        * V (Overflow): Set if the result of the last arithmetic operation caused an Overflow.
+    2. Reserved Bits (Bits 27-8):
+        * These bits are mared as "Do not modify/Read as zero".
+        * Reserved for future use or specific hardware implementations. Altering these can lead to undefined behavior.
+    3. Control Bits:
+        * I (Bit 7): Interrupt Disable Flag.
+            * When set, normal interrupts (IRQ) are disabled.
+        * F (Bit 6): Fast Interrupt Disable Flag.
+            * When set, FIQ are disabled.
+        * T (Bit 5): Thumb State Flag.
+            * Indicates whether the processor is executing in Thumb State (1 = Thumb mode, 0 = ARM mode).
+    4. Processor Mode Bits (Bits 4-0):
+        * M[4:0]: Defines the current processor mode.
+            * 00000: User mode.
+            * 10000: IRQ mode.
+            * 10001: IRQ mode.
+            * 10011: Abort mode.
+            * 10111: Undefined mode.
+            * 11111: System mode.
+        * These bits determine access permissions and available features, such as privileged instructions.
+    * Key Points:
+        * The PSR plays a crucial role in managing the processor's operation and exception handling.
+        * Condition flags are updated after most arithmetic and logical instructions, enabling conditional exeuction of subsequent instructions.
+        * The I, F, and T bits provide fine-grained control over interrupts and instruction set states.
+        * Changing the M[4:0] bits allow mode switching, critical for handling exceptions and system-level operations.
+    * Understanding PSR is virtal for low-level programming, especially when working on exception handling, interrypt service routines, or mode transitions. 
+
+Registers are the core data storage areas within a processor, used to hold variables, counters, memory addresses, or coefficients. The ARM7TDMI processor has a total of 37 registers, organized as follows:
+* 30 General-Purpose Registers (R0–R14): Can store any data needed during execution.
+* 6 Status Registers: Contain inforamtion about the processor's state, including flags, modes, and interrupt settings.
+* 1 Program Counter (R15): Tracks the address of the current instruction.
+
+General-purpose registers are 32 bits wide, and the set of available registers changes depending on the current processor mode (e.g., User, Supervisor, IRQ). This arrangement, called "banked registers", allows certain registers to be swapped out during mode changes (e.g., in interrupts) for efficiency and safety.
+
+banked registers R13 and R14 are unqiue for each mode (e.g., R13_SVC, R14_IRQ), ensuring each mode has its own stack pointer and return address:
+* R13 (Stack Pointer, SP): Points to the stack in memory and is mode-specific.
+* R14 (Link Register, LR): Holds the return address for subroutine or exception handling.
+When an interrupt or exception occurs, the processor switches to a different mode (e.g., FIQ, IRQ) and swaps in the relevant R13 and R14 registers without needing to save the entire context to memory. This speeds up handling by minimizing overhead.
+
+The Program Counter (PC) tracks the address of the current instruction being executed. While the processor fetches instructions from memory in a pipeline architecture, the PC always points to the instruction currently being fetched, not executed.
+
+The CPSR represents the "state" of the processor, providing essential information for managing operations:
+* Condition Flags (N, Z, C, V): Indicate the results of operations (e.g., negative, zero, carry, overflow).
+* Control Bits (I, F, T):
+    * I (IRQ Disable): Disables standard interrupts.
+    * F (FIQ Disable): Disables fast interrupts:
+    * T (Thumb State): Indicates whether the processor is executing in Thumb (16-bit) or ARM (32-bit) instruction.
+* Mode Bits (M[4:0]): Define the processor mode, such as User, Supervisor, or IRQ.
+
+Saved Program Status Register - Each privileged mode (e.g., FIQ, IRQ) has its own SPSR to save the CPSR during exceptions or interrupts. This allows the processor to restore the original state when returning to the previous task. User and System modes lack an SPSR since they do not handle exceptions directly.
+
+Important Notes on Usage:
+* The CPSR's condition flags can be modified by arithmetic and logical instructions, enabling features like conditional execution.
+* The T bit determines the instruction set (ARM or Thumb) and can only be changed in privileged modes.
+* Invalid configurations of the mode bits (M[4:0]) result in undefined behavior, as the processor may not recognize the state.
+This organization ensures efficient context management and enables robust handling of exceptions and interrupts, crucial for real-time and embedded systems.
+
+#### 2.3.3 The Vector Table - Page 65
+
+## Chapter 3 - Introduction to Instruction Sets: v4T and v7-M 
 ## Chapter 4 - Assembler Rules and Directives
 ## Chapter 5 - Loads, Stores, and Addressing 
 ## Chapter 6 - Constants and Literal Pools 
