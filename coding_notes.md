@@ -160,6 +160,8 @@ If `R02=deadbeef`, it means your assembly code executed successfully, and the va
 
         ```
         * These images are ready for flashing onto the target board or for use in an emulator like QEMU.
+
+Continue on: 1.2.4 Barebox 
 ### 2 Filesystems 
 ### 3 Commmand reference 
 ### 4 Board Support 
