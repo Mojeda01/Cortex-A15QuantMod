@@ -107,69 +107,6 @@ If `R02=deadbeef`, it means your assembly code executed successfully, and the va
 `0xDEADBEEF` was loaded into register **R2**.
 
 ## 2 Adding a Bootloader - We are going to use BareBox instead of Das U-Boot
-### 1 User Manual
-* 1.2. barebox 
-    1. Cloning the barebox repository:
-        ```
-        git clone git://git.pengutronix.de/git/barebox.git
-
-        ```
-        * This command clones the Barebox Git repository to your local machine.
-        * It ensures you have the latest version of the Barebox source code or a specific branch to work with.
-    2. Setting architecture and Cross Compiler:
-        ```
-        export ARCH=arm
-        export CROSS_COMPILE=/path/to/arm-cortexa8-linux-gnueabihf-
-
-        ```
-        * `ARCH=arm`: Specifies the target architecture.
-        * `CROSS_COMPILE`: Sets the path or prefix for the ARM cross-compiler toolchain.
-    3. Configuring Barebox for a board:
-        ```
-        make imx_v7_defconfig
-
-        ```
-        * Selects a specific board configuration file for building Barebox.
-        * Replace `imx_v7_defconfig` with the desired board configuration for your setup.
-    4. Customizing Configuration:
-        ```
-        make menuconfig
-
-        ```
-        * Launches an interactive menu for customizing Barebox build configurations.
-        * Use this to tweak settings such as driver support or specific board features.
-    5. Out-of-Tree Builds:
-        ```
-        export KBUILD_OUTPUT=.../my_barebox_build_directory
-
-        ```
-        * Keeps build artifacts separate from the source tree, ensuring a clean source directory.
-        * All subsequent `make` commands output to the specified directory.
-        * **Important:** Run `make distclean` in the source directory before out-of-tree builds if previously used for in-tree builds.
-    6. Compiling Barebox:
-        ```
-        make
-
-        ```
-        * Initiates the build process for Barebox.
-        * The generated images are placed in the `images/` directory.
-        * output examples (based on board):
-        ```
-        barebox-freescale-imx53-loco.img
-        barebox-tq-mba53-1gib.img
-
-        ```
-        * These images are ready for flashing onto the target board or for use in an emulator like QEMU.
-
-Continue on: 1.2.4 Barebox 
-### 2 Filesystems 
-### 3 Commmand reference 
-### 4 Board Support 
-### 5 Glossary
-### 6 Bareboax devicetree handling and bindings 
-### 7 Barebox programming 
-
-
 
 ## 3 Preparing a C environment 
 ## 4 Build & Debug System
