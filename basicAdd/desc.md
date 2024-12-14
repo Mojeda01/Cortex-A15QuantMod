@@ -1,1 +1,0 @@
-This ARM assembly program demonstrates basic memory manipulation. It initializes a register with a memory address (`0x80000000`), stores the value `42` (decimal) at that address, and then retreives the value back into another register. This illustrates how to use `ldr` (load) and `str`(store) instructions for direct memory access in a bare-metal environment.

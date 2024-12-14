@@ -107,3 +107,6 @@ I'm using the CoreTile-A15x2 to build a low-level system for probability models,
 
 3. Real-world applications:
     * Test the platform with investment problems and gambling scenarios.
+
+***
+
