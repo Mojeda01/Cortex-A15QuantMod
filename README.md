@@ -1,5 +1,7 @@
 # Quant mod for CoreTile-A15x2
 
+**TEMPORARILY SWITCHING TO VEXPRESS A9**
+
 I'm using the CoreTile-A15x2 to build a low-level system for probability models, stochastic variables, calculus, ML, information theory, statistics, optimziation problem analysis, numerical solvers (ODEs and PDEs), matrix factorizations, and sparse matrix support. This low-level approach deepends the understanding by tackling these topics at their most fundamental and challenging level. So, this is a challenge for myself, of course. But if successful, I would like to utilize it as an tool for solving investment problems.
 
 ## Core Components
