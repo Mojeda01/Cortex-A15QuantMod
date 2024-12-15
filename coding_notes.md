@@ -106,9 +106,43 @@ R00=00000000 R01=000008e0 R02=deadbeef R03=00000000
 If `R02=deadbeef`, it means your assembly code executed successfully, and the value 
 `0xDEADBEEF` was loaded into register **R2**.
 
-## 2 Adding a Bootloader - We are going to use BareBox instead of Das U-Boot
+## 3 Preparing a C environment
+Preparing a bare-metal C environment involves initializing critical components in assembly and transferring 
+control to C code. This process setting up the stack and relocating data from ROM to RAM. The initial C program will confirm functionality by sending stringts to a UART terminal. While not using a formal driver, UART output ensures proper system setup and serves as an effective debugging tool.
 
-## 3 Preparing a C environment 
+The startup code has been revised to include stack preparation, which is essential for executing C code. The stack is defined with a start and end address, and the stack pointer is initialized to the end address, conforming to the descending stack convention (e.g., `0x60020000` to `0x60021000` for a `0x1000` byte stack). The ARMv7-A architecture supports multiple stack pointers, specific to various processor modes (e.g., Supervisor, IRQ, FIQ). Registers like SP (`R13`) LR (`R14`) and PC (`R15`) may be referenced by different names, but their functionality remains consitent across tools and documentation.
+
+The ARM registers `SP` and `R13` are interchangeable terms for the stack pointer. Similarly, `LR` refers to `R14` (link register), and `PC` refers to the `R15` (program counter). The naming depends on the documentation or tools being used, but their roles remain consistent. Avoid confunsion regarding these special registers, as they often have multiple names.
+
+To prepare the startup code for ARM, we begin by defining processor modes (`MODE_FIQ`, `MODE_IRQ`, `MODE_SVC`) in the assembly file. The stack pointer (`SP`) is set up for each mode, with a separate memory region allocated to prevent overlap.
+
+1. Switch to FIQ Mode:
+    * Use the `msr cpsr_c, MODE_FIQ` instruction to set the processor to FIQ mode by writing the appropriate value (`0x11`) to the **CPSR** register.
+
+2. Initialize Stack:
+    * Load the stack's stard address into `R1` and the end address into `SP` using the `ldr` instruction. This ensures proper stack growth.
+
+3. Garbage Fill for Debugging:
+    * Fill the stack region with a repeating pattern (`0xFEFEFEFE`) using `movw` and `movt`. ARM assembly splits 32-bit constants into two parts for efficiency.
+
+4. Validate Stack initialization:
+    * Use a loop (`fiq_loop`) to iterate over the stack and fill it. The `cmp` and `strlt` instructions ensure the stack is completely filed.
+
+This structured intialization is essential for handling exceptions and ensuring mode-specific stacks operate independently. The linker script will define stack addresses, which simplifies management.
+
+The `strlt` and `blt` instructions in ARM assembly demonstrate **conditional execution**. These instructions execute only if specific condition flags are set. For instance:
+* `strlr`: A conditional version of the `str` instruction, executing only if the `less-than` (`lt`) condition code is met, based on the result of a prior comparison.
+* `blt`: A branch instruction that executes if the "less-than" condition code is met.
+
+In the stack-filling loop:
+1. **Compare**: `cmp R1, SP` checks if the current address in `R1` is less than the stack pointer (`SP`).
+2. **Conditionally Store**: If `R1` is less than `SP`, `strlt R0, [R1], #4` writes the value `0xFEFEFEFE` (stored in `R0`) to the address in `R1` and increments `R1` by 4 bytes.
+3. **branch**: The `blt` instruction repeats the loop as long as the condition holds.
+
+Once the FIQ stack is initialized, the same process is repeated for the IRQ and Supervisor stacks, ensuring independent stack regions for each mode.
+
+Page - 29 - Handling sections and data
+
 ## 4 Build & Debug System
 ## 5 UART driver development 
 ## 6 Interrupts
@@ -465,6 +499,7 @@ Important Notes on Usage:
 This organization ensures efficient context management and enables robust handling of exceptions and interrupts, crucial for real-time and embedded systems.
 
 #### 2.3.3 The Vector Table - Page 65
+
 
 ## Chapter 3 - Introduction to Instruction Sets: v4T and v7-M 
 ## Chapter 4 - Assembler Rules and Directives
