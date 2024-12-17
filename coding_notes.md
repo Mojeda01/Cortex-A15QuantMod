@@ -499,9 +499,27 @@ Important Notes on Usage:
 This organization ensures efficient context management and enables robust handling of exceptions and interrupts, crucial for real-time and embedded systems.
 
 #### 2.3.3 The Vector Table - Page 65
+* The vector table provides designated memory addresses to handle exceptions like interrupts, undefined instructions, and resets. For example, an IRQ sets the Program Counter (PC) to **0x18**, where the processor fetches the next instruction, usually a brnach to an interrupt handler. Table 2.2 lists exception vectors for ARM7TDMI, with the Reset vector at 0x00000000, executed immediately after reset. Modern development tools simplify this process by providing startup code and exception handlers, but during low-level programming, a reset handler at address 0x0 is critical for initialization.
 
+## Chapter 3 - Introduction to Instruction Sets: v4T and v7-M
+### 3.1 Introduction
+This chapter introduces assembly programming basics, explaining how directives and code structure work together to create a program. Tools and concepts are learned simultaneously, which can feel challenging initially. Modern Integrated Development Environments (IDEs) simplify this process with graphical interfaces that combine source code, registers, memory, and assembler output, making it easier to visualize and debug. 
 
-## Chapter 3 - Introduction to Instruction Sets: v4T and v7-M 
+Tools like **Keil MDK** and **Code Composer Studio** provide integrated environments to write, assemble, and test code efficiently. IDEs replace outdated command-line assemblers, offering instant error reporting, visual debugging aids, and an overall user-friendly experience. Even open-source tools like GNU can be used, though syntax variations may require consulting documentation.
+### 3.2 ARM, THUMB, and THUMB-2 Instructions
+ARM instructions are 32 bits wide, designed for older architectures like ARM7TDMI and ARM11. Thumb instructions, a subset of ARM, are 16 bits wide but perform similar operations with reduced code. For example:
+* ARM: `ADD r0, r0, r2`
+* Thumb: `ADD r0, r2`
+Both add values in regusters but Thumb omits one operand, making the instruction smaller.
+
+Thumb-2 combines 16-bit and 32-bit instructions, allowing greater flexibility. While the assembler can choose the optimal size, a programmer can explicitly force instruction size. Some cores, such as Cortex-M3 and M4, support only Thumb-2 instructions. This makes Thumb-2 code highly efficient and similar to ARM, facilitating easier coding optimization across ARM architectures.
+### 3.3 Program 1: Shifting Data
+This example demonstrates a simple ARM assembly program using MOV and LSL instructions for shifting values. The program loads `0x11` into register **r0**, shifts it **one bit left** into **r1**, and shifts that results another bit left into **r2**, producing `0x11`, `0x22`, and `0x44` respectively.
+
+The program structure starts with the **AREA** directive to define a read-only code block. The ENTRY directive specifies the program's starting point. The MOV instruction loads immediate values into registers, while LSL shifts register values left by the specified number of bits. Finally, a B (branch) instructionm creates an infinite loop, halting program execution.
+
+This structure ensures clarity and serves as a foundation for understanding more complex assembly instruction, focusing on ARM7TDMI and Cortex-M4 architectures.
+
 ## Chapter 4 - Assembler Rules and Directives
 ## Chapter 5 - Loads, Stores, and Addressing 
 ## Chapter 6 - Constants and Literal Pools 
